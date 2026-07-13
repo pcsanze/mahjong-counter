@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ヨウキカイ - MAHJONG COUNTER</title>
+<style>
+  :root {
+    --bg: #131313;
+    --card: #1e1e1e;
+    --card-2: #191919;
+    --border: #383838;
+    --border-soft: #2a2a2a;
+    --text: #ececec;
+    --text-dim: #8f8f8f;
+    --text-faint: #5f5f5f;
+    --orange: #ff9c2e;
+    --orange-dim: #6b4520;
+    --cyan: #4dd6ec;
+    --green: #4ee08a;
+    --red: #ff5f5f;
+    --east: #c0392b;
+    --south: #2d6cc0;
+    --west: #2d8659;
+    --north: #7d3ec4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at top, #1c1c1c 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: "Yu Gothic", "Hiragino Sans", "Segoe UI", sans-serif;
+    padding: 32px 16px 64px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .titlecard {
+    text-align: center;
+    padding: 22px 16px 26px;
+    border: 1px solid var(--border);
+    border-bottom: 3px solid var(--orange);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #1a1a1a, #151515);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-family: "Courier New", "SF Mono", Consolas, monospace;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--orange);
+    text-shadow: 0 0 10px rgba(255, 156, 46, 0.35), 2px 2px 0 #000;
+  }
+
+  .subtitle {
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--green);
+    text-shadow: 0 0 6px rgba(78, 224, 138, 0.4);
+  }
+
+  .rules-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    background: var(--card-2);
+  }
+
+  .rule-item {
+    text-align: center;
+  }
+
+  .rule-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .rule-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .rule-input {
+    width: 56px;
+    background: #101010;
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-align: center;
+    border-radius: 4px;
+    padding: 4px 2px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rule-value span {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  select.rule-input {
+    width: auto;
+    padding: 4px 6px;
+  }
+
+  .board {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .col-headers {
+    display: grid;
+    grid-template-columns: 40px 1fr 110px 90px 100px;
+    gap: 10px;
+    padding: 0 4px 8px;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .col-headers span:nth-child(3),
+  .col-headers span:nth-child(4),
+  .col-headers span:nth-child(5) { text-align: center; }
+
+  .player-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 110px 90px 100px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 4px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .player-row:first-of-type { border-top: none; }
+
+  .seat {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  }
+
+  .seat.east { background: var(--east); }
+  .seat.south { background: var(--south); }
+  .seat.west { background: var(--west); }
+  .seat.north { background: var(--north); }
+
+  input.name {
+    width: 100%;
+    background: #101010;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  input.score, input.chip {
+    width: 100%;
+    background: #101010;
+    border: 1px solid var(--border);
+    color: var(--orange);
+    text-align: right;
+    border-radius: 4px;
+    padding: 8px 8px;
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input.chip { color: var(--cyan); }
+
+  .result {
+    text-align: right;
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+    padding-right: 6px;
+  }
+
+  .result.pos { color: var(--green); }
+  .result.neg { color: var(--red); }
+
+  .footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .total-check {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .total-check b {
+    font-variant-numeric: tabular-nums;
+    font-size: 17px;
+    color: var(--green);
+  }
+
+  .total-check.bad b { color: var(--red); }
+
+  .btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  .btn-calc {
+    background: var(--orange);
+    color: #1a1200;
+    border-color: var(--orange);
+  }
+  .btn-calc:hover { filter: brightness(1.08); }
+
+  .btn-add {
+    background: #1c2e33;
+    color: var(--cyan);
+    border-color: #2a4750;
+  }
+  .btn-add:disabled {
+    color: var(--text-faint);
+    background: #181818;
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn-add:not(:disabled):hover { filter: brightness(1.15); }
+
+  .btn-reset {
+    background: transparent;
+    color: var(--text-faint);
+    border-color: var(--border);
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  .btn-reset:hover { color: var(--text-dim); border-color: var(--text-faint); }
+
+  .history-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 16px;
+  }
+
+  .history-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+
+  .history-title .bar {
+    width: 4px;
+    height: 16px;
+    background: var(--orange);
+    border-radius: 2px;
+  }
+
+  .hist-wrap { overflow-x: auto; }
+
+  table.hist {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 480px;
+  }
+
+  table.hist th, table.hist td {
+    padding: 8px 6px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  table.hist thead tr:first-child th {
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  table.hist thead tr:last-child th {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-weight: 500;
+    padding-top: 2px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table.hist td.kai-label {
+    color: var(--text-faint);
+    text-align: left;
+    padding-left: 4px;
+  }
+
+  table.hist tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  table.hist td.pt.pos { color: var(--green); }
+  table.hist td.pt.neg { color: var(--red); }
+  table.hist td.chip { color: var(--cyan); }
+
+  input.hist-edit {
+    width: 56px;
+    background: #101010;
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    padding: 4px 2px;
+  }
+  input.hist-edit.pt { color: var(--text); }
+  input.hist-edit.chip { color: var(--cyan); }
+  input.hist-edit:focus { border-color: var(--cyan); outline: none; }
+
+  .btn-del-row {
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--text-faint);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-del-row:hover { color: var(--red); border-color: var(--red); }
+
+  .empty-msg {
+    text-align: center;
+    color: var(--text-faint);
+    padding: 22px 0;
+    font-size: 13px;
+  }
+
+  tr.total-row td {
+    border-top: 1px solid var(--border);
+    font-weight: 800;
+    padding-top: 10px;
+  }
+  tr.total-row td.kai-label { color: var(--orange); }
+  tr.total-row td.pt.pos { color: var(--green); }
+  tr.total-row td.pt.neg { color: var(--red); }
+  tr.total-row td.chip { color: var(--cyan); }
+
+  @media (max-width: 560px) {
+    body { padding: 16px 10px 48px; }
+
+    .col-headers, .player-row {
+      grid-template-columns: 32px 1fr 74px 60px 66px;
+      gap: 6px;
+    }
+    .col-headers { font-size: 10px; }
+
+    .rules-bar { grid-template-columns: 1fr; gap: 14px; }
+    .rule-input { width: 64px; padding: 8px 4px; font-size: 15px; }
+    .rule-value { gap: 6px; }
+
+    .result { font-size: 16px; }
+
+    input.name, input.score, input.chip {
+      padding: 10px 8px;
+      font-size: 16px; /* avoids iOS auto-zoom on focus */
+    }
+
+    .footer-bar { flex-direction: column; align-items: stretch; }
+    .total-check { text-align: center; }
+    .btns { justify-content: stretch; }
+    .btns button { flex: 1; padding: 12px 10px; }
+
+    .btn-reset { flex: 0 0 auto !important; }
+
+    .save-bar { flex-direction: column; align-items: stretch; }
+    .save-bar input[type="text"] { width: 100%; }
+    .btn-save { width: 100%; padding: 12px; }
+    .autosave-note { text-align: center; margin-right: 0; }
+
+    .archive-item-head {
+      flex-wrap: wrap;
+      row-gap: 6px;
+    }
+    .archive-date { flex: 1 1 auto; }
+    .archive-players {
+      flex-basis: 100%;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    .btn-del-archive { padding: 6px 12px; font-size: 12px; }
+  }
+
+  .save-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 12px 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .save-bar input[type="text"] {
+    background: #101010;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    width: 160px;
+  }
+
+  .btn-save {
+    background: #2a3d1f;
+    color: var(--green);
+    border: 1px solid #3d5a2c;
+    border-radius: 5px;
+    padding: 9px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  .btn-save:hover { filter: brightness(1.15); }
+
+  .autosave-note {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-right: auto;
+  }
+
+  .archive-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .archive-item {
+    border: 1px solid var(--border-soft);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+
+  .archive-item-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: var(--card-2);
+  }
+
+  .archive-item-head:hover { background: #1f1f1f; }
+
+  .archive-date {
+    font-weight: 700;
+    color: var(--orange);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .archive-players {
+    color: var(--text-dim);
+    font-size: 12px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .archive-caret {
+    color: var(--text-faint);
+    font-size: 11px;
+    transition: transform 0.15s;
+  }
+  .archive-item.open .archive-caret { transform: rotate(90deg); }
+
+  .btn-del-archive {
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--text-faint);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-del-archive:hover { color: var(--red); border-color: var(--red); }
+
+  .archive-body {
+    display: none;
+    padding: 10px 12px 14px;
+  }
+  .archive-item.open .archive-body { display: block; }
+
+  table.archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 420px;
+  }
+  table.archive-table th, table.archive-table td {
+    padding: 6px 5px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+  }
+  table.archive-table th { color: var(--text-faint); border-bottom: 1px solid var(--border-soft); }
+  table.archive-table td.pt.pos { color: var(--green); }
+  table.archive-table td.pt.neg { color: var(--red); }
+  table.archive-table tr.arch-total td { border-top: 1px solid var(--border-soft); font-weight: 700; color: var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="titlecard">
+    <h1>ヨウキカイ</h1>
+    <div class="subtitle">MAHJONG COUNTER v2.1</div>
+  </div>
+
+  <div class="rules-bar">
+    <div class="rule-item">
+      <div class="rule-label">[ルール]</div>
+      <div class="rule-value">
+        <input class="rule-input" id="startPts" type="number" step="1000" value="25000">
+        <span>持/</span>
+        <input class="rule-input" id="returnPts" type="number" step="1000" value="30000">
+        <span>返</span>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-label">[ウマ]</div>
+      <div class="rule-value">
+        <input class="rule-input" id="umaLow" type="number" value="5">
+        <span>-</span>
+        <input class="rule-input" id="umaHigh" type="number" value="15">
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-label">[丸め]</div>
+      <div class="rule-value">
+        <select class="rule-input" id="roundMode">
+          <option value="godsha" selected>五捨六入</option>
+          <option value="round">四捨五入</option>
+          <option value="floor">切り捨て</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="col-headers">
+      <span>座順</span>
+      <span>プレイヤー</span>
+      <span>持ち点（素点）</span>
+      <span>チップ（枚）</span>
+      <span>スコア結果</span>
+    </div>
+
+    <div id="playerRows"></div>
+
+    <div class="footer-bar">
+      <div class="total-check" id="totalCheck">テンスウ合計: <b id="totalSum">100000</b> / <span id="totalTarget">100,000</span></div>
+      <div class="btns">
+        <button class="btn-reset" id="btnResetHand" title="素点をリセット">リセット</button>
+        <button class="btn-calc" id="btnCalc">【ケイサン】</button>
+        <button class="btn-add" id="btnAdd" disabled>【ギョウツイカ】</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-card">
+    <div class="history-title"><span class="bar"></span>リレキ &amp; トータルスコア</div>
+    <div class="hist-wrap">
+      <table class="hist">
+        <thead>
+          <tr id="histNameRow">
+            <th>カイ</th>
+            <th colspan="2">-</th>
+            <th colspan="2">-</th>
+            <th colspan="2">-</th>
+            <th colspan="2">-</th>
+            <th></th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>PT</th><th>CHIP</th>
+            <th>PT</th><th>CHIP</th>
+            <th>PT</th><th>CHIP</th>
+            <th>PT</th><th>CHIP</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="histBody">
+          <tr><td colspan="10" class="empty-msg">データがありません。【ケイサン】して【ギョウツイカ】してください。</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td class="kai-label">TOTAL</td>
+            <td class="pt" id="totPt0">0.0</td><td class="chip" id="totChip0">0</td>
+            <td class="pt" id="totPt1">0.0</td><td class="chip" id="totChip1">0</td>
+            <td class="pt" id="totPt2">0.0</td><td class="chip" id="totChip2">0</td>
+            <td class="pt" id="totPt3">0.0</td><td class="chip" id="totChip3">0</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <span class="autosave-note" id="autosaveNote">自動保存: 未実施</span>
+    <input type="text" id="archiveLabel" placeholder="この日の記録名(任意)">
+    <button class="btn-save" id="btnArchive">この日の記録として保存</button>
+  </div>
+
+  <div class="archive-card">
+    <div class="history-title"><span class="bar"></span>過去の記録</div>
+    <div id="archiveList"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const SEATS = [
+    { code: 'east', label: '東', name: 'ようへい' },
+    { code: 'south', label: '南', name: 'ゆうき' },
+    { code: 'west', label: '西', name: 'たかや' },
+    { code: 'north', label: '北', name: 'りょうす' }
+  ];
+
+  const rowsEl = document.getElementById('playerRows');
+  const history = []; // { names:[], pts:[], chips:[] }
+  let lastCalc = null;
+
+  const STORAGE_CURRENT = 'yokikai_current_v1';
+  const STORAGE_ARCHIVE = 'yokikai_archive_v1';
+  let openArchiveId = null;
+
+  SEATS.forEach((seat, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `
+      <div class="seat ${seat.code}">${seat.label}</div>
+      <input class="name" id="name${i}" value="${seat.name}">
+      <input class="score" id="score${i}" type="number" step="100" value="25000">
+      <input class="chip" id="chip${i}" type="number" step="1" value="0">
+      <div class="result" id="result${i}">0.0</div>
+    `;
+    rowsEl.appendChild(row);
+  });
+
+  function els(i) {
+    return {
+      name: document.getElementById('name' + i),
+      score: document.getElementById('score' + i),
+      chip: document.getElementById('chip' + i),
+      result: document.getElementById('result' + i)
+    };
+  }
+
+  function updateTotalCheck() {
+    let sum = 0;
+    for (let i = 0; i < 4; i++) sum += Number(els(i).score.value || 0);
+    const target = Number(document.getElementById('startPts').value || 0) * 4;
+    const box = document.getElementById('totalCheck');
+    document.getElementById('totalSum').textContent = sum.toLocaleString();
+    document.getElementById('totalTarget').textContent = target.toLocaleString();
+    box.classList.toggle('bad', sum !== target);
+    document.getElementById('totalSum').style.color = sum === target ? 'var(--green)' : 'var(--red)';
+  }
+
+  function roundScore(val, mode) {
+    // val is in "score units" (already divided by 1000), rounds to 1 decimal
+    const scaled = val * 10;
+    const floor = Math.floor(scaled);
+    const frac = scaled - floor;
+    let rounded;
+    if (mode === 'floor') {
+      rounded = floor;
+    } else if (mode === 'round') {
+      rounded = Math.round(scaled);
+    } else {
+      // 五捨六入: .5 rounds down, .6+ rounds up (checked on the next digit)
+      const nextDigit = Math.round((val * 100) % 10);
+      rounded = nextDigit >= 6 ? Math.ceil(scaled) : Math.floor(scaled);
+    }
+    return rounded / 10;
+  }
+
+  function calc() {
+    const startPts = Number(document.getElementById('startPts').value || 0);
+    const returnPts = Number(document.getElementById('returnPts').value || 0);
+    const umaLow = Number(document.getElementById('umaLow').value || 0);
+    const umaHigh = Number(document.getElementById('umaHigh').value || 0);
+    const mode = document.getElementById('roundMode').value;
+
+    const players = [];
+    for (let i = 0; i < 4; i++) {
+      const e = els(i);
+      players.push({
+        i,
+        name: e.name.value || SEATS[i].name,
+        score: Number(e.score.value || 0),
+        chip: Number(e.chip.value || 0)
+      });
+    }
+
+    const sum = players.reduce((a, p) => a + p.score, 0);
+    if (sum !== startPts * 4) {
+      alert('素点の合計が ' + (startPts * 4).toLocaleString() + ' 点になっていません。(現在: ' + sum.toLocaleString() + ')');
+      return;
+    }
+
+    const ranked = [...players].sort((a, b) => b.score - a.score || a.i - b.i);
+    const umaTable = [umaHigh, umaLow, -umaLow, -umaHigh];
+
+    const results = [];
+    ranked.forEach((p, rank) => {
+      const base = (p.score - returnPts) / 1000;
+      const withUma = base + umaTable[rank];
+      const withChip = withUma + p.chip;
+      const finalScore = roundScore(withChip, mode);
+      results[p.i] = finalScore;
+    });
+
+    for (let i = 0; i < 4; i++) {
+      const e = els(i);
+      const val = results[i];
+      e.result.textContent = (val > 0 ? '+' : '') + val.toFixed(1);
+      e.result.classList.toggle('pos', val > 0);
+      e.result.classList.toggle('neg', val < 0);
+    }
+
+    lastCalc = {
+      names: players.map(p => p.name),
+      pts: results,
+      chips: players.map(p => p.chip)
+    };
+    document.getElementById('btnAdd').disabled = false;
+  }
+
+  function renderHistory() {
+    const nameRow = document.getElementById('histNameRow');
+    const currentNames = [0,1,2,3].map(i => els(i).name.value || SEATS[i].name);
+    const ths = nameRow.querySelectorAll('th');
+    for (let i = 0; i < 4; i++) ths[i + 1].textContent = currentNames[i];
+
+    const body = document.getElementById('histBody');
+    body.innerHTML = '';
+
+    if (history.length === 0) {
+      body.innerHTML = '<tr><td colspan="10" class="empty-msg">データがありません。【ケイサン】して【ギョウツイカ】してください。</td></tr>';
+    } else {
+      history.forEach((h, idx) => {
+        const tr = document.createElement('tr');
+        let cells = `<td class="kai-label">${idx + 1}回戦</td>`;
+        for (let i = 0; i < 4; i++) {
+          cells += `<td><input class="hist-edit pt" type="number" step="0.1" data-row="${idx}" data-player="${i}" data-field="pt" value="${h.pts[i].toFixed(1)}"></td>`;
+          cells += `<td><input class="hist-edit chip" type="number" step="1" data-row="${idx}" data-player="${i}" data-field="chip" value="${h.chips[i]}"></td>`;
+        }
+        cells += `<td><button class="btn-del-row" data-row="${idx}" title="この回を削除">✕</button></td>`;
+        tr.innerHTML = cells;
+        body.appendChild(tr);
+      });
+    }
+
+    const totals = [0, 0, 0, 0];
+    const totalChips = [0, 0, 0, 0];
+    history.forEach(h => {
+      for (let i = 0; i < 4; i++) {
+        totals[i] += h.pts[i];
+        totalChips[i] += h.chips[i];
+      }
+    });
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('totPt' + i);
+      el.textContent = (totals[i] > 0 ? '+' : '') + totals[i].toFixed(1);
+      el.classList.toggle('pos', totals[i] > 0);
+      el.classList.toggle('neg', totals[i] < 0);
+      document.getElementById('totChip' + i).textContent = totalChips[i];
+    }
+  }
+
+  function addRow() {
+    if (!lastCalc) return;
+    history.push(lastCalc);
+    lastCalc = null;
+    document.getElementById('btnAdd').disabled = true;
+    renderHistory();
+    resetHand();
+  }
+
+  function resetHand() {
+    const startPts = document.getElementById('startPts').value;
+    for (let i = 0; i < 4; i++) {
+      const e = els(i);
+      e.score.value = startPts;
+      e.chip.value = 0;
+      e.result.textContent = '0.0';
+      e.result.classList.remove('pos', 'neg');
+    }
+    updateTotalCheck();
+  }
+
+  function recalcTotalsOnly() {
+    const totals = [0, 0, 0, 0];
+    const totalChips = [0, 0, 0, 0];
+    history.forEach(h => {
+      for (let i = 0; i < 4; i++) {
+        totals[i] += h.pts[i];
+        totalChips[i] += h.chips[i];
+      }
+    });
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('totPt' + i);
+      el.textContent = (totals[i] > 0 ? '+' : '') + totals[i].toFixed(1);
+      el.classList.toggle('pos', totals[i] > 0);
+      el.classList.toggle('neg', totals[i] < 0);
+      document.getElementById('totChip' + i).textContent = totalChips[i];
+    }
+  }
+
+  function currentStateSnapshot() {
+    return {
+      rules: {
+        startPts: document.getElementById('startPts').value,
+        returnPts: document.getElementById('returnPts').value,
+        umaLow: document.getElementById('umaLow').value,
+        umaHigh: document.getElementById('umaHigh').value,
+        roundMode: document.getElementById('roundMode').value
+      },
+      names: [0, 1, 2, 3].map(i => els(i).name.value),
+      hand: [0, 1, 2, 3].map(i => ({ score: els(i).score.value, chip: els(i).chip.value })),
+      history: history.map(h => ({ names: h.names.slice(), pts: h.pts.slice(), chips: h.chips.slice() }))
+    };
+  }
+
+  function saveCurrentToStorage() {
+    try {
+      localStorage.setItem(STORAGE_CURRENT, JSON.stringify(currentStateSnapshot()));
+      const note = document.getElementById('autosaveNote');
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      note.textContent = `自動保存: ${hh}:${mm}:${ss}`;
+    } catch (e) { /* localStorage unavailable, silently skip */ }
+  }
+
+  function loadCurrentFromStorage() {
+    let raw;
+    try { raw = localStorage.getItem(STORAGE_CURRENT); } catch (e) { return; }
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); } catch (e) { return; }
+
+    document.getElementById('startPts').value = data.rules.startPts;
+    document.getElementById('returnPts').value = data.rules.returnPts;
+    document.getElementById('umaLow').value = data.rules.umaLow;
+    document.getElementById('umaHigh').value = data.rules.umaHigh;
+    document.getElementById('roundMode').value = data.rules.roundMode;
+
+    for (let i = 0; i < 4; i++) {
+      els(i).name.value = data.names[i];
+      els(i).score.value = data.hand[i].score;
+      els(i).chip.value = data.hand[i].chip;
+    }
+
+    history.length = 0;
+    (data.history || []).forEach(h => history.push(h));
+  }
+
+  function getArchiveList() {
+    try {
+      const raw = localStorage.getItem(STORAGE_ARCHIVE);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function setArchiveList(list) {
+    try { localStorage.setItem(STORAGE_ARCHIVE, JSON.stringify(list)); } catch (e) { /* skip */ }
+  }
+
+  function archiveToday() {
+    if (history.length === 0) {
+      alert('リレキが空です。【ケイサン】して【ギョウツイカ】した後に保存してください。');
+      return;
+    }
+    const now = new Date();
+    const dateStr = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + String(now.getDate()).padStart(2, '0');
+    const labelInput = document.getElementById('archiveLabel');
+    const label = labelInput.value.trim();
+
+    const entry = {
+      id: 'a' + now.getTime(),
+      date: dateStr,
+      label: label,
+      names: [0, 1, 2, 3].map(i => els(i).name.value),
+      history: history.map(h => ({ names: h.names.slice(), pts: h.pts.slice(), chips: h.chips.slice() }))
+    };
+
+    const list = getArchiveList();
+    list.unshift(entry);
+    setArchiveList(list);
+
+    history.length = 0;
+    labelInput.value = '';
+    renderHistory();
+    resetHand();
+    renderArchiveList();
+    saveCurrentToStorage();
+  }
+
+  function renderArchiveList() {
+    const wrap = document.getElementById('archiveList');
+    const list = getArchiveList();
+
+    if (list.length === 0) {
+      wrap.innerHTML = '<div class="empty-msg">まだ記録がありません。【この日の記録として保存】を押すと、ここに残ります。</div>';
+      return;
+    }
+
+    wrap.innerHTML = '';
+    list.forEach(entry => {
+      const totals = [0, 0, 0, 0];
+      entry.history.forEach(h => { for (let i = 0; i < 4; i++) totals[i] += h.pts[i]; });
+
+      const item = document.createElement('div');
+      item.className = 'archive-item' + (openArchiveId === entry.id ? ' open' : '');
+
+      const summary = entry.names.map((n, i) => `${n} ${totals[i] > 0 ? '+' : ''}${totals[i].toFixed(1)}`).join(' / ');
+
+      let rowsHtml = '';
+      entry.history.forEach((h, idx) => {
+        rowsHtml += `<tr><td>${idx + 1}回戦</td>` + h.pts.map(v => `<td class="pt ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`).join('') + '</tr>';
+      });
+      rowsHtml += '<tr class="arch-total"><td>TOTAL</td>' + totals.map(v => `<td class="pt ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`).join('') + '</tr>';
+
+      item.innerHTML = `
+        <div class="archive-item-head" data-id="${entry.id}">
+          <span class="archive-caret">▶</span>
+          <span class="archive-date">${entry.date}${entry.label ? ' ・ ' + entry.label : ''}</span>
+          <span class="archive-players">${summary}</span>
+          <button class="btn-del-archive" data-del="${entry.id}">削除</button>
+        </div>
+        <div class="archive-body">
+          <div style="overflow-x:auto;">
+            <table class="archive-table">
+              <thead><tr><th></th>${entry.names.map(n => `<th>${n}</th>`).join('')}</tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(item);
+    });
+  }
+
+  document.getElementById('archiveList').addEventListener('click', (ev) => {
+    const delBtn = ev.target.closest('[data-del]');
+    if (delBtn) {
+      if (!confirm('この記録を削除しますか？')) return;
+      const list = getArchiveList().filter(e => e.id !== delBtn.dataset.del);
+      setArchiveList(list);
+      renderArchiveList();
+      return;
+    }
+    const head = ev.target.closest('.archive-item-head');
+    if (head) {
+      const id = head.dataset.id;
+      openArchiveId = openArchiveId === id ? null : id;
+      renderArchiveList();
+    }
+  });
+
+  document.getElementById('btnArchive').addEventListener('click', archiveToday);
+
+  document.getElementById('histBody').addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (!t.classList.contains('hist-edit')) return;
+    const row = Number(t.dataset.row);
+    const player = Number(t.dataset.player);
+    const field = t.dataset.field;
+    const val = Number(t.value || 0);
+    if (field === 'pt') {
+      history[row].pts[player] = val;
+      t.classList.toggle('pos', false);
+      t.classList.toggle('neg', false);
+    } else {
+      history[row].chips[player] = val;
+    }
+    recalcTotalsOnly();
+    saveCurrentToStorage();
+  });
+
+  document.getElementById('histBody').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.btn-del-row');
+    if (!btn) return;
+    const row = Number(btn.dataset.row);
+    if (!confirm((row + 1) + '回戦のデータを削除しますか？')) return;
+    history.splice(row, 1);
+    renderHistory();
+    saveCurrentToStorage();
+  });
+
+  document.getElementById('btnCalc').addEventListener('click', calc);
+  document.getElementById('btnAdd').addEventListener('click', () => { addRow(); saveCurrentToStorage(); });
+  document.getElementById('btnResetHand').addEventListener('click', () => { resetHand(); saveCurrentToStorage(); });
+
+  ['startPts', 'returnPts', 'umaLow', 'umaHigh', 'roundMode'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { updateTotalCheck(); saveCurrentToStorage(); });
+    document.getElementById(id).addEventListener('change', saveCurrentToStorage);
+  });
+
+  for (let i = 0; i < 4; i++) {
+    els(i).score.addEventListener('input', () => { updateTotalCheck(); saveCurrentToStorage(); });
+    els(i).chip.addEventListener('input', saveCurrentToStorage);
+    els(i).name.addEventListener('input', () => { renderHistory(); saveCurrentToStorage(); });
+  }
+
+  loadCurrentFromStorage();
+  updateTotalCheck();
+  renderHistory();
+  renderArchiveList();
+})();
+</script>
+</body>
+</html>

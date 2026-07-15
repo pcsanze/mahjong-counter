@@ -362,6 +362,12 @@
   input.hist-edit.pt { color: var(--text); }
   input.hist-edit:focus { border-color: var(--cyan); outline: none; }
 
+  .row-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+
   .btn-del-row {
     background: transparent;
     border: 1px solid var(--border-soft);
@@ -372,6 +378,18 @@
     cursor: pointer;
   }
   .btn-del-row:hover { color: var(--red); border-color: var(--red); }
+
+  .btn-ins-row {
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--text-faint);
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-ins-row:not(:disabled):hover { color: var(--cyan); border-color: var(--cyan); }
+  .btn-ins-row:disabled { opacity: 0.3; cursor: not-allowed; }
 
   .empty-msg {
     text-align: center;
@@ -840,6 +858,7 @@
       pts: results
     };
     document.getElementById('btnAdd').disabled = false;
+    renderHistory();
   }
 
   function renderHistory() {
@@ -860,7 +879,10 @@
         for (let i = 0; i < 4; i++) {
           cells += `<td><input class="hist-edit pt" type="number" step="0.1" data-row="${idx}" data-player="${i}" data-field="pt" value="${h.pts[i].toFixed(1)}"></td>`;
         }
-        cells += `<td><button class="btn-del-row" data-row="${idx}" title="この回を削除">✕</button></td>`;
+        cells += `<td class="row-actions">
+          <button class="btn-ins-row" data-row="${idx}" title="この回の前に挿入(先にケイサンしてください)" ${lastCalc ? '' : 'disabled'}>⬆+</button>
+          <button class="btn-del-row" data-row="${idx}" title="この回を削除">✕</button>
+        </td>`;
         tr.innerHTML = cells;
         body.appendChild(tr);
       });
@@ -885,6 +907,16 @@
     document.getElementById('btnAdd').disabled = true;
     renderHistory();
     resetHand();
+  }
+
+  function insertRowAt(idx) {
+    if (!lastCalc) return;
+    history.splice(idx, 0, lastCalc);
+    lastCalc = null;
+    document.getElementById('btnAdd').disabled = true;
+    renderHistory();
+    resetHand();
+    saveCurrentToStorage();
   }
 
   function resetHand() {
@@ -1077,13 +1109,24 @@
   });
 
   document.getElementById('histBody').addEventListener('click', (ev) => {
-    const btn = ev.target.closest('.btn-del-row');
-    if (!btn) return;
-    const row = Number(btn.dataset.row);
-    if (!confirm((row + 1) + '回戦のデータを削除しますか？')) return;
-    history.splice(row, 1);
-    renderHistory();
-    saveCurrentToStorage();
+    const delBtn = ev.target.closest('.btn-del-row');
+    if (delBtn) {
+      const row = Number(delBtn.dataset.row);
+      if (!confirm((row + 1) + '回戦のデータを削除しますか？')) return;
+      history.splice(row, 1);
+      renderHistory();
+      saveCurrentToStorage();
+      return;
+    }
+    const insBtn = ev.target.closest('.btn-ins-row');
+    if (insBtn) {
+      if (!lastCalc) {
+        alert('先に素点を入力して【ケイサン】してください。その結果をこの回の前に挿入します。');
+        return;
+      }
+      const row = Number(insBtn.dataset.row);
+      insertRowAt(row);
+    }
   });
 
   function isInAppBrowser() {

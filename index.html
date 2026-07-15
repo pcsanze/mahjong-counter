@@ -145,6 +145,8 @@
   .col-headers span:nth-child(3),
   .col-headers span:nth-child(4) { text-align: center; }
 
+  .col-headers > span { min-width: 0; }
+
   .player-row {
     display: grid;
     grid-template-columns: 40px 1fr 110px 100px;
@@ -155,6 +157,8 @@
   }
 
   .player-row:first-of-type { border-top: none; }
+
+  .player-row > * { min-width: 0; }
 
   .seat {
     width: 36px;

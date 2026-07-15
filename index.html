@@ -147,7 +147,7 @@
 
   .player-row {
     display: grid;
-    grid-template-columns: 40px 1fr 220px;
+    grid-template-columns: 40px 1fr 110px 100px;
     gap: 10px;
     align-items: center;
     padding: 8px 4px;
@@ -155,15 +155,6 @@
   }
 
   .player-row:first-of-type { border-top: none; }
-
-  .row-stats {
-    display: grid;
-    grid-template-columns: 110px 100px;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .stat-label { display: none; }
 
   .seat {
     width: 36px;
@@ -391,45 +382,26 @@
   @media (max-width: 560px) {
     body { padding: 16px 10px 48px; }
 
-    .col-headers {
-      grid-template-columns: 32px 1fr;
-      gap: 6px;
-      font-size: 10px;
+    .col-headers, .player-row {
+      grid-template-columns: 28px 1fr 76px 66px;
+      gap: 5px;
     }
-    .col-headers span:nth-child(n+3) { display: none; }
-
-    .player-row {
-      grid-template-columns: 32px 1fr;
-      grid-template-areas:
-        "seat name"
-        "stats stats";
-      row-gap: 8px;
-      column-gap: 6px;
-    }
-    .player-row .seat { grid-area: seat; width: 32px; height: 32px; font-size: 13px; }
-    .player-row input.name { grid-area: name; }
-    .row-stats {
-      grid-area: stats;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .stat-label {
-      display: block;
-      font-size: 9px;
-      color: var(--text-faint);
-      text-align: center;
-      margin-bottom: 3px;
-      letter-spacing: 0.03em;
-    }
+    .col-headers { font-size: 10px; }
+    .player-row .seat { width: 28px; height: 28px; font-size: 12px; }
 
     .rules-bar { grid-template-columns: 1fr; gap: 14px; }
     .rule-input { width: 64px; padding: 8px 4px; font-size: 15px; }
     .rule-value { gap: 6px; }
 
-    .result { font-size: 16px; text-align: center; }
+    .result { font-size: 15px; }
 
-    input.name, input.score {
-      padding: 10px 8px;
+    input.name {
+      padding: 8px 6px;
+      font-size: 16px; /* avoids iOS auto-zoom on focus */
+    }
+
+    input.score {
+      padding: 8px 4px;
       font-size: 16px; /* avoids iOS auto-zoom on focus */
     }
 
@@ -764,10 +736,8 @@
     row.innerHTML = `
       <div class="seat ${seat.code}">${seat.label}</div>
       <input class="name" id="name${i}" value="${seat.name}">
-      <div class="row-stats">
-        <div><span class="stat-label">持ち点</span><input class="score" id="score${i}" type="number" step="100" value="25000"></div>
-        <div><span class="stat-label">結果</span><div class="result" id="result${i}">0.0</div></div>
-      </div>
+      <input class="score" id="score${i}" type="number" step="100" value="25000">
+      <div class="result" id="result${i}">0.0</div>
     `;
     rowsEl.appendChild(row);
   });
